@@ -9,9 +9,11 @@ from keras.layers import LSTM
 from timeit import default_timer as timer
 import pickle
 from datetime import datetime
+import os
 
 
 basepath = 'data'
+mpath = 'models'
 
 
 class DataSet(object):
@@ -52,6 +54,12 @@ class DataSet(object):
     def num_keys(self):
         return len(self.data)
 
+    def last_obs(self):
+        total = len(self.npdata)
+        obs = self.x.shape[1]
+        start = total - obs - 1
+        return self.npdata[start:start+obs].reshape((1, obs, 1))
+
 
 def save_name(obs, pred, min, max, units, cells, lr, epochs):
     return "o%.4d_p%.4d_m%.4d_M%.4d_u%.3d_c%.3d_lr%e_e%.4d" % \
@@ -67,8 +75,10 @@ class TrainContext(object):
         self.sname = sname
 
     def save(self):
-        self.model.save_weights(self.sname + '_weights.h5')
-        with open(self.sname + '.pkl', 'wb') as f:
+        if not os.path.exists(mpath):
+            os.mkdir(mpath)
+        self.model.save_weights(mpath + '/' + self.sname + '_weights.h5')
+        with open(mpath + '/' + self.sname + '.pkl', 'wb') as f:
             pickle.dump(self.scaler, f)
             pickle.dump(self.history, f)
             pickle.dump(self.train_time, f)
@@ -79,8 +89,8 @@ class TrainContext(object):
         sname = save_name(obs, pred, min, max, units, cells, lr, epochs)
         ctx.sname = sname
         ctx.model = make_model(obs, pred, units, cells)
-        ctx.model.load_weights(sname + '_weights.h5')
-        with open(sname + '.pkl', 'rb') as f:
+        ctx.model.load_weights(mpath + '/' + sname + '_weights.h5')
+        with open(mpath + '/' + sname + '.pkl', 'rb') as f:
             ctx.scaler = pickle.load(f)
             ctx.history = pickle.load(f)
             ctx.train_time = pickle.load(f)
