@@ -168,7 +168,17 @@ def train_model(data, min=None, max=None, units=64, cells=1, lr=1e-3, epochs=32,
 
 
 def main():
-    pass
+    d = DataSet()
+    rindex = 144278
+    d.process_index(rindex, 120, 60)
+
+    ctx = train_model(d, units=128, cells=2, epochs=16, verbose=True)
+    ctx.save()
+    for i in range(d.num_keys()):
+        print("index: %d" % i)
+        d.process_index(i, 120, 60)
+        ctx.train(d, lr=1e-3, epochs=16, verbose=True)
+        ctx.save()
 
 
 if __name__ == '__main__':
