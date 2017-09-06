@@ -170,5 +170,6 @@ def train_model(data, min=None, max=None, units=64, cells=1, lr=1e-3, epochs=32,
 def main():
     pass
 
+
 if __name__ == '__main__':
     main()
