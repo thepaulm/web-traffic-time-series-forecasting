@@ -8,6 +8,7 @@ from keras.layers import Dense
 from keras.layers import LSTM
 from timeit import default_timer as timer
 import pickle
+from datetime import datetime
 
 
 basepath = 'data'
@@ -85,6 +86,30 @@ class TrainContext(object):
             ctx.train_time = pickle.load(f)
         return ctx
 
+    def train(self, data, lr, epochs, min=None, max=None, verbose=False):
+        self.sname = str(datetime.now()).replace(' ', '_')
+
+        if min is not None or max is not None:
+            if min is None:
+                min = 0
+            if max is None:
+                max = len(data.x)
+            x = data.x[min:max]
+            y = data.y[min:max]
+        else:
+            min = 0
+            max = len(data.x)
+            x = data.x
+            y = data.y
+
+        self.model.optimizer.lr = lr
+
+        start = timer()
+        history = self.model.fit(x, y, epochs=epochs, batch_size=1, verbose=verbose)
+        end = timer()
+        self.train_time = end-start
+        self.history['loss'].extend(history.history['loss'])
+
 
 def make_model(obs, pred, units, cells):
     model = Sequential()
@@ -98,6 +123,7 @@ def make_model(obs, pred, units, cells):
         model.add(LSTM(units))
 
     model.add(Dense(pred))
+    model.compile(loss='mean_squared_error', optimizer='adam')
     return model
 
 
@@ -121,7 +147,6 @@ def train_model(data, min=None, max=None, units=64, cells=1, lr=1e-3, epochs=32,
     pred = y.shape[1]
 
     model = make_model(obs, pred, units, cells)
-    model.compile(loss='mean_squared_error', optimizer='adam')
     model.optimizer.lr = lr
 
     start = timer()
