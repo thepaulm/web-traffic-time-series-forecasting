@@ -96,6 +96,19 @@ class TrainContext(object):
             ctx.train_time = pickle.load(f)
         return ctx
 
+    @staticmethod
+    def load_name(fname, obs, pred, min, max, units, cells, lr, epochs):
+        ctx = TrainContext(None, None, None, None, None)
+        sname = fname
+        ctx.sname = sname
+        ctx.model = make_model(obs, pred, units, cells)
+        ctx.model.load_weights(mpath + '/' + sname + '_weights.h5')
+        with open(mpath + '/' + sname + '.pkl', 'rb') as f:
+            ctx.scaler = pickle.load(f)
+            ctx.history = pickle.load(f)
+            ctx.train_time = pickle.load(f)
+        return ctx
+
     def train(self, data, lr, epochs, min=None, max=None, verbose=False):
         self.sname = str(datetime.now()).replace(' ', '_')
 
