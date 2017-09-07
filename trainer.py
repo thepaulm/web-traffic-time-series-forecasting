@@ -99,18 +99,10 @@ class TrainContext(object):
     def train(self, data, lr, epochs, min=None, max=None, verbose=False):
         self.sname = str(datetime.now()).replace(' ', '_')
 
-        if min is not None or max is not None:
-            if min is None:
-                min = 0
-            if max is None:
-                max = len(data.x)
-            x = data.x[min:max]
-            y = data.y[min:max]
-        else:
-            min = 0
-            max = len(data.x)
-            x = data.x
-            y = data.y
+        min, max = minmax(min, max, data)
+
+        x = data.x[min:max]
+        y = data.y[min:max]
 
         self.model.optimizer.lr = lr
 
@@ -137,21 +129,21 @@ def make_model(obs, pred, units, cells):
     return model
 
 
+def minmax(min, max, d):
+    if min is None:
+        min = 0
+    if max is None:
+        max = len(d.x)
+    return min, max
+
+
 def train_model(data, min=None, max=None, units=64, cells=1, lr=1e-3, epochs=32, verbose=False):
     '''create and fit the LSTM network'''
 
-    if min is not None or max is not None:
-        if min is None:
-            min = 0
-        if max is None:
-            max = len(data.x)
-        x = data.x[min:max]
-        y = data.y[min:max]
-    else:
-        min = 0
-        max = len(data.x)
-        x = data.x
-        y = data.y
+    min, max = minmax(min, max, data)
+
+    x = data.x[min:max]
+    y = data.y[min:max]
 
     obs = x.shape[1]
     pred = y.shape[1]
@@ -179,6 +171,7 @@ def main():
         d.process_index(i, 120, 60)
         ctx.train(d, lr=1e-3, epochs=16, verbose=True)
         ctx.save()
+
 
 
 if __name__ == '__main__':
