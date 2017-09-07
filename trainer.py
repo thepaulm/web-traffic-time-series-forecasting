@@ -60,6 +60,13 @@ class DataSet(object):
         start = total - obs - 1
         return self.npdata[start:start+obs].reshape((1, obs, 1))
 
+    def obs_at(self, start):
+        obs = self.x.shape[1]
+        return self.npdata[start:start+obs].reshape((1, obs, 1))
+
+    def descale(self, pred):
+        return self.scaler.inverse_transorm(pred)
+
 
 def save_name(obs, pred, min, max, units, cells, lr, epochs):
     return "o%.4d_p%.4d_m%.4d_M%.4d_u%.3d_c%.3d_lr%e_e%.4d" % \
@@ -73,6 +80,14 @@ class TrainContext(object):
         self.history = history
         self.train_time = train_time
         self.sname = sname
+
+    def predict(self, data, start=None):
+        if start is None:
+            obs = data.last_obs()
+        else:
+            obs = data.obs_at(start)
+        pred = self.model.predict(obs)
+        return pred
 
     def save(self):
         if not os.path.exists(mpath):
@@ -102,8 +117,8 @@ class TrainContext(object):
         sname = fname
         ctx.sname = sname
         ctx.model = make_model(obs, pred, units, cells)
-        ctx.model.load_weights(mpath + '/' + sname + '_weights.h5')
-        with open(mpath + '/' + sname + '.pkl', 'rb') as f:
+        ctx.model.load_weights(sname + '_weights.h5')
+        with open(sname + '.pkl', 'rb') as f:
             ctx.scaler = pickle.load(f)
             ctx.history = pickle.load(f)
             ctx.train_time = pickle.load(f)
