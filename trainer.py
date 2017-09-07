@@ -107,7 +107,8 @@ class TrainContext(object):
         self.model.optimizer.lr = lr
 
         start = timer()
-        history = self.model.fit(x, y, epochs=epochs, batch_size=1, verbose=verbose)
+        bs = x.shape[0]
+        history = self.model.fit(x, y, epochs=epochs, batch_size=bs, verbose=verbose)
         end = timer()
         self.train_time = end-start
         self.history['loss'].extend(history.history['loss'])
@@ -152,7 +153,8 @@ def train_model(data, min=None, max=None, units=64, cells=1, lr=1e-3, epochs=32,
     model.optimizer.lr = lr
 
     start = timer()
-    history = model.fit(x, y, epochs=epochs, batch_size=1, verbose=verbose)
+    bs = x.shape[0]
+    history = model.fit(x, y, epochs=epochs, batch_size=bs, verbose=verbose)
     end = timer()
     return TrainContext(model, data.scaler, history.history, end-start,
                         save_name(obs, pred, min=min, max=max, units=units, cells=cells, lr=lr,
