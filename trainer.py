@@ -65,7 +65,7 @@ class DataSet(object):
         return self.npdata[start:start+obs].reshape((1, obs, 1))
 
     def descale(self, pred):
-        return self.scaler.inverse_transorm(pred)
+        return self.scaler.inverse_transform(pred)
 
 
 def save_name(obs, pred, min, max, units, cells, lr, epochs):
