@@ -51,6 +51,10 @@ class DataSet(object):
         self.y = outY.squeeze(axis=2)
         self.npdata = npdata
 
+    def process_page(self, page, observations, predictions):
+        index = self.data[self.data.Page == page].index[0]
+        self.process_index(index, observations, predictions)
+
     def num_keys(self):
         return len(self.data)
 
